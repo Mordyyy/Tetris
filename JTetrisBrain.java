@@ -22,9 +22,9 @@ public class JTetrisBrain extends  JTetris{
         little.add(new JLabel("Adversary:"));
         adversary = new JSlider(0, 100, 0);
         adversary.setPreferredSize(new Dimension(100,15)); little.add(adversary);
-        panel.add(little);
         brainMode = new JCheckBox("Brain active");
         panel.add(brainMode);
+        panel.add(little);
         return panel;
     }
 
