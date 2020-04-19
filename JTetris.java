@@ -1,12 +1,11 @@
 // JTetris.java
-import java.awt.*;
 import javax.swing.*;
-
-import java.util.*;
-import java.awt.event.*;
-import javax.swing.event.*;
-
-import java.awt.Toolkit;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Random;
 
 
 /**
@@ -713,10 +712,6 @@ public class JTetris extends JComponent {
 	 Creates a frame with a JTetris.
 	*/
 	public static void main(String[] args) {
-		// Set GUI Look And Feel Boilerplate.
-		// Do this incantation at the start of main() to tell Swing
-		// to use the GUI LookAndFeel of the native platform. It's ok
-		// to ignore the exception.
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception ignored) { }

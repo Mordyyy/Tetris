@@ -22,6 +22,7 @@ public class Piece {
 	// Starter code specs out a few basic things, leaving
 	// the algorithms to be done.
 	private TPoint[] body;
+	private HashMap<Integer, ArrayList<Integer> > fastBoard;
 	private int[] skirt;
 	private int width;
 	private int height;
@@ -32,14 +33,18 @@ public class Piece {
 	/**
 	 Defines a new piece given a TPoint[] array of its body.
 	 Makes its own copy of the array and the TPoints inside it.
-	*/
+	 * @param i
+	 */
 	public Piece(TPoint[] points) {
-		// YOUR CODE HERE
+		body = new TPoint[points.length];
+		body = points;
+		Arrays.sort(body);
+		next = null;
+		fillBoard();
+		width = findWidth();
+		height = findHeight();
+		fillSkirts();
 	}
-	
-
-	
-	
 	/**
 	 * Alternate constructor, takes a String with the x,y body points
 	 * all separated by spaces, such as "0 0  1 0  2 0	1 1".
@@ -47,6 +52,55 @@ public class Piece {
 	 */
 	public Piece(String points) {
 		this(parsePoints(points));
+	}
+
+	private void fillBoard() {
+		fastBoard = new HashMap<>();
+		for(TPoint point : body){
+			if(fastBoard.containsKey(point.x))
+				putY(point);
+			else
+				createNew(point);
+		}
+
+		for(Integer x : fastBoard.keySet())
+			Collections.sort(fastBoard.get(x));
+	}
+
+	private void createNew(TPoint point) {
+		ArrayList<Integer> ys = new ArrayList<>();
+		ys.add(point.y);
+		fastBoard.put(point.x, ys);
+	}
+
+	private void putY(TPoint point){
+		ArrayList<Integer> ys = fastBoard.get(point.x);
+		ys.add(point.y);
+		fastBoard.put(point.x, ys);
+	}
+
+	private void fillSkirts(){
+		int n = fastBoard.size();
+		skirt = new int[n];
+		for(Integer x : fastBoard.keySet())
+			skirt[x] = (fastBoard.get(x)).get(0);
+	}
+
+	private int findHeight(){
+		int currMax = -1;
+		for(Integer x : fastBoard.keySet()){
+			ArrayList<Integer> ys = fastBoard.get(x);
+			currMax = Math.max(currMax, ys.get(ys.size() - 1));
+		}
+		return currMax + 1;
+	}
+
+	private int findWidth() {
+		int currMax = -1;
+		for(Integer x : fastBoard.keySet()){
+			currMax = Math.max(currMax,x);
+		}
+		return currMax + 1;
 	}
 
 	/**
@@ -87,8 +141,20 @@ public class Piece {
 	 rotated from the receiver.
 	 */
 	public Piece computeNextRotation() {
-		// YOUR CODE HERE
-		return null; // YOUR CODE HERE
+		TPoint [] guys = new TPoint[body.length];
+		int minX = Integer.MAX_VALUE;
+		for(int i = 0; i < body.length; i++){
+			TPoint curr = body[i];
+			int x = curr.x;
+			int y = curr.y;
+			TPoint guy = new TPoint(-y,x);
+			minX = Math.min(minX, -y);
+			guys[i] = guy;
+		}
+		for(int i = 0; i < guys.length; i++)
+			(guys[i]).x -= minX;
+		Piece answer = new Piece(guys);
+		return answer;
 	}
 
 	/**
@@ -119,8 +185,20 @@ public class Piece {
 		// (null will be false)
 		if (!(obj instanceof Piece)) return false;
 		Piece other = (Piece)obj;
-		
-		// YOUR CODE HERE
+		TPoint[] otherBody = other.getBody();
+		if(body.length != otherBody.length) return false;
+		for(int i = 0; i < body.length; i++){
+			TPoint p = body[i];
+			boolean eq = false;
+			for(int j = 0; j < otherBody.length; j++) {
+				TPoint q = otherBody[j];
+				if (p.x == q.x && p.y == q.y) {
+					eq = true;
+					break;
+				}
+			}
+			if(!eq) return false;
+		}
 		return true;
 	}
 
@@ -128,7 +206,7 @@ public class Piece {
 	// String constants for the standard 7 tetris pieces
 	public static final String STICK_STR	= "0 0	0 1	 0 2  0 3";
 	public static final String L1_STR		= "0 0	0 1	 0 2  1 0";
-	public static final String L2_STR		= "0 0	1 0 1 1	 1 2";
+	public static final String L2_STR		= "0 0	1 0  1 1  1 2";
 	public static final String S1_STR		= "0 0	1 0	 1 1  2 1";
 	public static final String S2_STR		= "0 1	1 1  1 0  2 0";
 	public static final String SQUARE_STR	= "0 0  0 1  1 0  1 1";
@@ -187,11 +265,17 @@ public class Piece {
 	 to the first piece.
 	*/
 	private static Piece makeFastRotations(Piece root) {
-		// YOUR CODE HERE
-		return null; // YOUR CODE HERE
+		Piece curr = root;
+		curr.next = curr.computeNextRotation();
+		while(!(curr.next).equals(root)){
+			Piece dra = curr.next;
+			Piece ro = dra.computeNextRotation();
+			curr = dra;
+			curr.next = ro;
+		}
+		curr.next = root;
+		return root;
 	}
-	
-	
 
 	/**
 	 Given a string of x,y pairs ("0 0	0 1 0 2 1 0"), parses
